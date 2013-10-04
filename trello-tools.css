@@ -1,0 +1,19 @@
+.toggles-divider {
+	display: block;
+	width: 4px;
+	height: 30px;
+	background-color: #000000;
+	margin-right: 4px;
+}
+
+.toggler { 
+	cursor: pointer; 
+}
+
+.toggler.active {
+	background-color: gainsboro;
+}
+
+#board-header .toggler {
+	overflow: visible;
+}
