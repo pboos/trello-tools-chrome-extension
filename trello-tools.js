@@ -61,20 +61,23 @@ var setup = function() {
         var boardHeader = $('#board-header');
         boardHeader.append($('<a class="board-header-btns left toggles-divider" />'));
         boardHeader.append($('.list, .invisible-list').map(function(position, list) {
-          var button, listTitle, name;
           list = $(list);
           var listTitle = list.find('h2')[0];
-          button = $('<a>').text(listTitle ? listTitle.firstChild.textContent : "Add...").addClass('quiet org-name toggler active');
+          var div = $('<div>').addClass('toggler');
+          var button = $('<a>').text(listTitle ? listTitle.firstChild.textContent : "Add...").addClass('quiet org-name active');
+          div.append(button);
+          div.append($("<div>")); // TODO the view that should show up when hovering over a
           button.click(function() {
             return toggle(list, button);
           });
           if (!setting.isActive(position)) {
             toggle(list, button, false);
           }
-          return button.get(0);
+          return div.get(0);
         }));
       }
     });
+    $('#board-header').css('overflow', 'visible');
   } else {
     setTimeout(setup, 100);
   }
