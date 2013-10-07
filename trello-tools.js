@@ -30,6 +30,13 @@ var SETTING = {
     this.setField(position, 'width', width);
     saveSetting();
   },
+  getColor: function(position) {
+    return this.getField(position, 'color', undefined);
+  },
+  setColor: function(position, color) {
+    this.setField(position, 'color', color);
+    saveSetting();
+  },
   getField: function(position, field, defaultValue) {
     if (this.items.length > position
         && this.items[position]
@@ -75,11 +82,19 @@ var toggle = function(position, list, button) {
   SETTING.setActive(position, button.hasClass('active'));
 };
 
-var setWidth = function(position, list, width) {
+var setWidth = function(position, width) {
+  var list = $($('.list, .invisible-list').get(position));
   list.removeClass('list-300 list-400 list-500 list-600 list-700 list-800 list-900');
   list.css('width', width);
   list.addClass('list-' + width);
   SETTING.setWidth(position, width);
+}
+
+var setColor = function(position, div, color) {
+  // div = $($('.toggler').get(position))
+  div.find('input').css('background', color).val(color);
+  $($('.list, .invisible-list').get(position)).css('background', color);
+  SETTING.setColor(position, color);
 }
 
 var setup = function() {
@@ -107,10 +122,21 @@ var setup = function() {
         widthSetting.append($('<option>800</option>'));
         widthSetting.append($('<option>900</option>'));
         widthSetting.change(function() {
-          setWidth(position, list, widthSetting.val());
+          setWidth(position, widthSetting.val());
         });
+        var colorPicker = $('<input type="text"/>');
+        colorPicker.change(function() {
+          var color = colorPicker.val();
+          if (color.match(/^#[a-zA-Z0-9]{6}$/)) {
+            setColor(position, div, color);
+          }
+        });
+        settingsDiv.append($('<h1>List Settings</h1>'));
         settingsDiv.append($('<span>Width: </span>'));
         settingsDiv.append(widthSetting);
+        settingsDiv.append($('<br />'));
+        settingsDiv.append($('<span>Color: </span>'));
+        settingsDiv.append(colorPicker);
         div.append(settingsDiv); // TODO the view that should show up when hovering over a
         button.click(function() {
           return toggle(position, list, div);
@@ -121,8 +147,11 @@ var setup = function() {
           toggle(position, list, div, false);
         }
         if (SETTING.getWidth(position)) {
-          setWidth(position, list, SETTING.getWidth(position));
+          setWidth(position, SETTING.getWidth(position));
           widthSetting.val(SETTING.getWidth(position));
+        }
+        if (SETTING.getColor(position)) {
+          setColor(position, div, SETTING.getColor(position));
         }
         return div.get(0);
       }));
