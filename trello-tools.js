@@ -80,6 +80,7 @@ var toggle = function(position, list, button) {
   list.toggle().toggleClass('list invisible-list');
 
   SETTING.setActive(position, button.hasClass('active'));
+  updateListAreaWidth();
 };
 
 var setWidth = function(position, width) {
@@ -88,6 +89,7 @@ var setWidth = function(position, width) {
   list.css('width', width);
   list.addClass('list-' + width);
   SETTING.setWidth(position, width);
+  updateListAreaWidth();
 }
 
 var setColor = function(position, div, color) {
@@ -95,6 +97,19 @@ var setColor = function(position, div, color) {
   div.find('input').css('background', color).val(color);
   $($('.list, .invisible-list').get(position)).css('background', color);
   SETTING.setColor(position, color);
+}
+
+var updateListAreaWidth = function() {
+  var width = _.reduce($('.list, .invisible-list'),
+    function(acc, list) {
+      list = $(list);
+      if (list.hasClass('invisible-list')) {
+        return acc;
+      } else {
+        return acc + parseInt(list.css('width').replace('px', '')) + 16; // width + 2 x 5px margin + 2 x 3px padding
+      }
+    }, 10); // 10 for margin left and right
+  $('.list-area').css('width', width);
 }
 
 var setup = function() {
