@@ -14,32 +14,47 @@
 //////////////
 // CODE TO RUN
 //////////////
-var toggle = function(list, button, shouldSaveSetting) {
-  if (typeof shouldSaveSetting === 'undefined') {
-    shouldSaveSetting = true;
-  }
-
-  button.toggleClass('active');
-  list.toggle().toggleClass('list invisible-list');
-
-  if (shouldSaveSetting) {
+var SETTING = {
+  items: [],
+  isActive: function(position) {
+    return this.getField(position, 'active', true);
+  },
+  setActive: function(position, active) {
+    this.setField(position, 'active', active);
     saveSetting();
+  },
+  getWidth: function(position) {
+    return this.getField(position, 'width', undefined);
+  },
+  setWidth: function(position, width) {
+    this.setField(position, 'width', width);
+    saveSetting();
+  },
+  getField: function(position, field, defaultValue) {
+    if (this.items.length > position
+        && this.items[position]
+        && typeof this.items[position][field] !== 'undefined') {
+      return this.items[position][field];
+    } else {
+      return defaultValue;
+    }
+  },
+  setField: function(position, field, value) {
+    if (!this.items[position]) {
+      this.items[position] = {};
+    }
+    this.items[position][field] = value;
   }
 };
 
 var loadSetting = function() {
   var setting = localStorage.getItem(getSettingKey());
-  setting = setting ? setting.split(',') : [];
-  return {
-    isActive: function(position) {
-      return setting.length > position && setting[position] === '1'
-    }
-  }
+  console.log('Loaded: ' + setting);
+  SETTING.items = JSON.parse(setting);
 }
 var saveSetting = function() {
-  var setting = $('.toggler').map(function(pos, item) {
-    return $(item).hasClass('active') ? 1 : 0;
-  }).get().join(',');
+  var setting = JSON.stringify(SETTING.items);
+  console.log('Saving: ' + setting);
   localStorage.setItem(getSettingKey(), setting);
 }
 
@@ -52,31 +67,66 @@ var getSettingKey = function () {
 }
 
 
+
+var toggle = function(position, list, button) {
+  button.toggleClass('active');
+  list.toggle().toggleClass('list invisible-list');
+
+  SETTING.setActive(position, button.hasClass('active'));
+};
+
+var setWidth = function(position, list, width) {
+  list.removeClass('list-300 list-400 list-500 list-600 list-700 list-800 list-900');
+  list.css('width', width);
+  list.addClass('list-' + width);
+  SETTING.setWidth(position, width);
+}
+
 var setup = function() {
   if ($(".list").size() > 0) {
-    var setting = loadSetting();
-    $('.list').each(function() {
-      var notYetCreated = !$('.toggler').length;
-      if (notYetCreated) {
-        var boardHeader = $('#board-header');
-        boardHeader.append($('<a class="board-header-btns left toggles-divider" />'));
-        boardHeader.append($('.list, .invisible-list').map(function(position, list) {
-          list = $(list);
-          var listTitle = list.find('h2')[0];
-          var div = $('<div>').addClass('toggler');
-          var button = $('<a>').text(listTitle ? listTitle.firstChild.textContent : "Add...").addClass('quiet org-name active');
-          div.append(button);
-          div.append($("<div>")); // TODO the view that should show up when hovering over a
-          button.click(function() {
-            return toggle(list, button);
-          });
-          if (!setting.isActive(position)) {
-            toggle(list, button, false);
-          }
-          return div.get(0);
-        }));
-      }
-    });
+    loadSetting();
+    var notYetCreated = !$('.toggler').length;
+    if (notYetCreated) {
+      var boardHeader = $('#board-header');
+      boardHeader.append($('<a class="board-header-btns left toggles-divider" />'));
+      boardHeader.append($('.list, .invisible-list').map(function(position, list) {
+        list = $(list);
+        var listTitle = list.find('h2')[0];
+        listTitle = listTitle ? listTitle.firstChild.textContent : "Add...";
+        console.log(position + ': ' + listTitle);
+        var div = $('<div>').addClass('toggler').addClass('active');
+        var button = $('<a>').text(listTitle).addClass('quiet org-name');
+        div.append(button);
+        var settingsDiv = $("<div>");
+        var widthSetting = $('<select />');
+        widthSetting.append($('<option>300</option>'));
+        widthSetting.append($('<option>400</option>'));
+        widthSetting.append($('<option>500</option>'));
+        widthSetting.append($('<option>600</option>'));
+        widthSetting.append($('<option>700</option>'));
+        widthSetting.append($('<option>800</option>'));
+        widthSetting.append($('<option>900</option>'));
+        widthSetting.change(function() {
+          setWidth(position, list, widthSetting.val());
+        });
+        settingsDiv.append($('<span>Width: </span>'));
+        settingsDiv.append(widthSetting);
+        div.append(settingsDiv); // TODO the view that should show up when hovering over a
+        button.click(function() {
+          return toggle(position, list, div);
+        });
+
+        // Restoring from settings
+        if (!SETTING.isActive(position)) {
+          toggle(position, list, div, false);
+        }
+        if (SETTING.getWidth(position)) {
+          setWidth(position, list, SETTING.getWidth(position));
+          widthSetting.val(SETTING.getWidth(position));
+        }
+        return div.get(0);
+      }));
+    }
     $('#board-header').css('overflow', 'visible');
   } else {
     setTimeout(setup, 100);
