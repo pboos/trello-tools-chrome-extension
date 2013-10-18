@@ -57,7 +57,9 @@ var SETTING = {
 var loadSetting = function() {
   var setting = localStorage.getItem(getSettingKey());
   console.log('Loaded: ' + setting);
-  SETTING.items = JSON.parse(setting);
+  if (setting) {
+    SETTING.items = JSON.parse(setting);
+  }
 }
 var saveSetting = function() {
   var setting = JSON.stringify(SETTING.items);
