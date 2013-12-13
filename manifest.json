@@ -1,9 +1,9 @@
 {
   "manifest_version": 2,
 
-  "name": "Trello - Tools",
-  "description": "",
-  "version": "1.0",
+  "name": "Tools for Trello",
+  "description": "Tools used at tutti.ch for Trello.",
+  "version": "1.0.1",
   "icons": { "128": "icon.png" },
 
   "background": { "scripts": ["background.js"] },
